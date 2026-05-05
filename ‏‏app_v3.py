@@ -80,49 +80,104 @@ def is_already_processed(img):
     return std_dev < 35 # عتبة تقديرية للصور الرمادية المعالجة
 
 def smart_preprocess(image_pil, size=512):
-    steps = []  # قائمة لتخزين الخطوات
+    steps = []  # قائمة لتخزين الخطوات والصور
     img = np.array(image_pil)
-    steps.append("تحويل الصورة إلى مصفوفة NumPy")
+    steps.append({
+        "name": "تحويل الصورة إلى مصفوفة NumPy",
+        "image": img.copy()
+    })
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    steps.append("تحويل من RGB إلى BGR")
+    steps.append({
+        "name": "تحويل من RGB إلى BGR",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
     
     # فحص تلقائي
     if is_already_processed(img):
         status = "Already Processed / İşlenmiş / معالجة مسبقاً"
-        steps.append("فحص: الصورة معالجة مسبقاً، سيتم توحيد الحجم فقط")
+        steps.append({
+            "name": "فحص: الصورة معالجة مسبقاً، سيتم توحيد الحجم فقط",
+            "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        })
         # فقط توحيد الحجم والقص
         img = cv2.resize(img, (size, size))
-        steps.append("تغيير حجم الصورة إلى 512x512")
+        steps.append({
+            "name": "تغيير حجم الصورة إلى 512x512",
+            "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        })
         return img, status, steps
     
     # المعالجة الكاملة للصور الخام
     status = "Raw Image / Ham Görüntü / صورة خام"
-    steps.append("فحص: الصورة خام، سيتم المعالجة الكاملة")
+    steps.append({
+        "name": "فحص: الصورة خام، سيتم المعالجة الكاملة",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
+    
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    steps.append("تحويل إلى صورة رمادية")
+    steps.append({
+        "name": "تحويل إلى صورة رمادية",
+        "image": cv2.cvtColor(cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
+    })
+    
     mask = gray > 10
     if mask.any(): 
         img = img[np.ix_(mask.any(1), mask.any(0))]
-        steps.append("قص الصورة لإزالة الحواف السوداء")
+        steps.append({
+            "name": "قص الصورة لإزالة الحواف السوداء",
+            "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        })
+    
     img = cv2.resize(img, (size, size))
-    steps.append("تغيير حجم الصورة إلى 512x512")
+    steps.append({
+        "name": "تغيير حجم الصورة إلى 512x512",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
+    
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-    steps.append("تحويل إلى فضاء LAB")
+    steps.append({
+        "name": "تحويل إلى فضاء LAB",
+        "image": cv2.cvtColor(cv2.cvtColor(lab, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
+    })
+    
     l, a, b = cv2.split(lab)
-    steps.append("فصل القنوات L, A, B")
+    steps.append({
+        "name": "فصل القنوات L, A, B",
+        "image": cv2.cvtColor(cv2.cvtColor(l, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
+    })
+    
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     l = clahe.apply(l)
-    steps.append("تطبيق CLAHE على قناة L لتحسين التباين")
+    steps.append({
+        "name": "تطبيق CLAHE على قناة L لتحسين التباين",
+        "image": cv2.cvtColor(cv2.cvtColor(l, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
+    })
+    
     img = cv2.merge((l, a, b))
-    steps.append("دمج القنوات مرة أخرى")
+    steps.append({
+        "name": "دمج القنوات مرة أخرى",
+        "image": cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
+    })
+    
     img = cv2.cvtColor(img, cv2.COLOR_LAB2BGR)
-    steps.append("تحويل إلى BGR")
+    steps.append({
+        "name": "تحويل إلى BGR",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
+    
     img = cv2.addWeighted(img, 4, cv2.GaussianBlur(img, (0,0), size/30), -4, 128)
-    steps.append("تطبيق فلتر Ben Graham (addWeighted مع Gaussian Blur)")
+    steps.append({
+        "name": "تطبيق فلتر Ben Graham (addWeighted مع Gaussian Blur)",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
+    
     mask_circ = np.zeros((size, size), dtype=np.uint8)
     cv2.circle(mask_circ, (size//2, size//2), int(size/2.1), 1, -1)
     img = cv2.bitwise_and(img, img, mask=mask_circ)
-    steps.append("تطبيق قناع دائري لتركيز على المنطقة المركزية")
+    steps.append({
+        "name": "تطبيق قناع دائري لتركيز على المنطقة المركزية",
+        "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    })
     
     return img, status, steps
 
@@ -163,10 +218,20 @@ if uploaded_file is not None:
             st.image(display_rgb, use_container_width=True)
             st.caption(f"{L['auto_msg']} {detection_status}")
 
-        # عرض خطوات المعالجة
+        # عرض خطوات المعالجة مع الصور
         st.markdown(f"### {L['steps']}")
-        for i, step in enumerate(steps, 1):
-            st.write(f"{i}. {step}")
+        
+        # إنشء أعمدة لعرض الصور بشكل جانبي
+        cols_per_row = 2
+        for i in range(0, len(steps), cols_per_row):
+            cols = st.columns(cols_per_row)
+            for j, col in enumerate(cols):
+                step_index = i + j
+                if step_index < len(steps):
+                    step = steps[step_index]
+                    with col:
+                        st.image(step["image"], use_container_width=True)
+                        st.caption(f"**{step_index + 1}. {step['name']}**")
 
         # التنبؤ
         results = model.predict(processed_img, imgsz=512)
