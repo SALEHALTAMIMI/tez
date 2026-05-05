@@ -20,7 +20,22 @@ LANGUAGES = {
         "student": "Student: SALEH SABRI ALTAMIMI",
         "supervisor": "Supervisor: Prof. Dr. Yusuf ÖZCAN",
         "auto_msg": "System detected: ",
-        "steps": "Processing Steps"
+        "steps": "Processing Steps",
+        # Processing step names
+        "step_1": "Convert image to NumPy array",
+        "step_2": "Convert from RGB to BGR",
+        "step_3": "Check: Already processed image, resizing only",
+        "step_4": "Resize image to 512x512",
+        "step_5": "Check: Raw image, full processing will be applied",
+        "step_6": "Convert to grayscale",
+        "step_7": "Crop image to remove black edges",
+        "step_8": "Convert to LAB color space",
+        "step_9": "Split L, A, B channels",
+        "step_10": "Apply CLAHE to L channel for contrast enhancement",
+        "step_11": "Merge channels again",
+        "step_12": "Convert to BGR",
+        "step_13": "Apply Ben Graham filter (addWeighted with Gaussian Blur)",
+        "step_14": "Apply circular mask to focus on center area"
     },
     "Türkçe": {
         "title": "RetinaCheck AI: Erken Teşhis Sistemi",
@@ -36,7 +51,22 @@ LANGUAGES = {
         "student": "Öğrenci: SALEH SABRI ALTAMIMI",
         "supervisor": "Danışman: Prof. Dr. Yusuf ÖZCAN",
         "auto_msg": "Sistem algıladı: ",
-        "steps": "İşleme Adımları"
+        "steps": "İşleme Adımları",
+        # Processing step names
+        "step_1": "Görüntüyü NumPy dizisine dönüştür",
+        "step_2": "RGB'den BGR'ye dönüştür",
+        "step_3": "Kontrol: Önceden işlenmiş görüntü, sadece yeniden boyutlandırma",
+        "step_4": "Görüntüyü 512x512 olarak yeniden boyutlandır",
+        "step_5": "Kontrol: Ham görüntü, tam işleme uygulanacak",
+        "step_6": "Gri tonlamaya dönüştür",
+        "step_7": "Siyah kenarları kaldırmak için görüntüyü kırp",
+        "step_8": "LAB renk uzayına dönüştür",
+        "step_9": "L, A, B kanallarını ayır",
+        "step_10": "Kontrast geliştirme için L kanalına CLAHE uygula",
+        "step_11": "Kanalları tekrar birleştir",
+        "step_12": "BGR'ye dönüştür",
+        "step_13": "Ben Graham filtresi uygula (Gaussian Blur ile addWeighted)",
+        "step_14": "Merkez alana odaklanmak için dairesel maske uygula"
     },
     "العربية": {
         "title": "RetinaCheck AI: نظام التشخيص المبكر",
@@ -52,7 +82,22 @@ LANGUAGES = {
         "student": "الطالب: صالح صبري التميمي",
         "supervisor": "المشرف: Prof. Dr. Yusuf ÖZCAN",
         "auto_msg": "النظام اكتشف: ",
-        "steps": "خطوات المعالجة"
+        "steps": "خطوات المعالجة",
+        # Processing step names
+        "step_1": "تحويل الصورة إلى مصفوفة NumPy",
+        "step_2": "تحويل من RGB إلى BGR",
+        "step_3": "فحص: الصورة معالجة مسبقاً، سيتم توحيد الحجم فقط",
+        "step_4": "تغيير حجم الصورة إلى 512x512",
+        "step_5": "فحص: الصورة خام، سيتم المعالجة الكاملة",
+        "step_6": "تحويل إلى صورة رمادية",
+        "step_7": "قص الصورة لإزالة الحواف السوداء",
+        "step_8": "تحويل إلى فضاء LAB",
+        "step_9": "فصل القنوات L, A, B",
+        "step_10": "تطبيق CLAHE على قناة L لتحسين التباين",
+        "step_11": "دمج القنوات مرة أخرى",
+        "step_12": "تحويل إلى BGR",
+        "step_13": "تطبيق فلتر Ben Graham (addWeighted مع Gaussian Blur)",
+        "step_14": "تطبيق قناع دائري لتركيز على المنطقة المركزية"
     }
 }
 
@@ -79,16 +124,22 @@ def is_already_processed(img):
     std_dev = np.std(img)
     return std_dev < 35 # عتبة تقديرية للصور الرمادية المعالجة
 
-def smart_preprocess(image_pil, size=512):
+def smart_preprocess(image_pil, size=512, lang_dict=None):
+    if lang_dict is None:
+        lang_dict = L
+    
     steps = []  # قائمة لتخزين الخطوات والصور
+    step_count = 1
+    
     img = np.array(image_pil)
     steps.append({
-        "name": "تحويل الصورة إلى مصفوفة NumPy",
+        "name": lang_dict["step_1"],
         "image": img.copy()
     })
+    
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     steps.append({
-        "name": "تحويل من RGB إلى BGR",
+        "name": lang_dict["step_2"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
@@ -96,13 +147,13 @@ def smart_preprocess(image_pil, size=512):
     if is_already_processed(img):
         status = "Already Processed / İşlenmiş / معالجة مسبقاً"
         steps.append({
-            "name": "فحص: الصورة معالجة مسبقاً، سيتم توحيد الحجم فقط",
+            "name": lang_dict["step_3"],
             "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         })
         # فقط توحيد الحجم والقص
         img = cv2.resize(img, (size, size))
         steps.append({
-            "name": "تغيير حجم الصورة إلى 512x512",
+            "name": lang_dict["step_4"],
             "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         })
         return img, status, steps
@@ -110,13 +161,13 @@ def smart_preprocess(image_pil, size=512):
     # المعالجة الكاملة للصور الخام
     status = "Raw Image / Ham Görüntü / صورة خام"
     steps.append({
-        "name": "فحص: الصورة خام، سيتم المعالجة الكاملة",
+        "name": lang_dict["step_5"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     steps.append({
-        "name": "تحويل إلى صورة رمادية",
+        "name": lang_dict["step_6"],
         "image": cv2.cvtColor(cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
     })
     
@@ -124,50 +175,50 @@ def smart_preprocess(image_pil, size=512):
     if mask.any(): 
         img = img[np.ix_(mask.any(1), mask.any(0))]
         steps.append({
-            "name": "قص الصورة لإزالة الحواف السوداء",
+            "name": lang_dict["step_7"],
             "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         })
     
     img = cv2.resize(img, (size, size))
     steps.append({
-        "name": "تغيير حجم الصورة إلى 512x512",
+        "name": lang_dict["step_4"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     steps.append({
-        "name": "تحويل إلى فضاء LAB",
+        "name": lang_dict["step_8"],
         "image": cv2.cvtColor(cv2.cvtColor(lab, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
     })
     
     l, a, b = cv2.split(lab)
     steps.append({
-        "name": "فصل القنوات L, A, B",
+        "name": lang_dict["step_9"],
         "image": cv2.cvtColor(cv2.cvtColor(l, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
     })
     
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     l = clahe.apply(l)
     steps.append({
-        "name": "تطبيق CLAHE على قناة L لتحسين التباين",
+        "name": lang_dict["step_10"],
         "image": cv2.cvtColor(cv2.cvtColor(l, cv2.COLOR_GRAY2BGR), cv2.COLOR_BGR2RGB)
     })
     
     img = cv2.merge((l, a, b))
     steps.append({
-        "name": "دمج القنوات مرة أخرى",
+        "name": lang_dict["step_11"],
         "image": cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
     })
     
     img = cv2.cvtColor(img, cv2.COLOR_LAB2BGR)
     steps.append({
-        "name": "تحويل إلى BGR",
+        "name": lang_dict["step_12"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
     img = cv2.addWeighted(img, 4, cv2.GaussianBlur(img, (0,0), size/30), -4, 128)
     steps.append({
-        "name": "تطبيق فلتر Ben Graham (addWeighted مع Gaussian Blur)",
+        "name": lang_dict["step_13"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
@@ -175,7 +226,7 @@ def smart_preprocess(image_pil, size=512):
     cv2.circle(mask_circ, (size//2, size//2), int(size/2.1), 1, -1)
     img = cv2.bitwise_and(img, img, mask=mask_circ)
     steps.append({
-        "name": "تطبيق قناع دائري لتركيز على المنطقة المركزية",
+        "name": lang_dict["step_14"],
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
@@ -206,7 +257,7 @@ if uploaded_file is not None:
     
     # المعالجة والذكاء التلقائي
     with st.spinner(L["detecting"]):
-        processed_img, detection_status, steps = smart_preprocess(original_image)
+        processed_img, detection_status, steps = smart_preprocess(original_image, lang_dict=L)
         
         c1, c2 = st.columns(2)
         with c1:
