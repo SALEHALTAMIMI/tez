@@ -120,16 +120,14 @@ st.markdown(f"""
 
 # --- 3. المحرك الذكي (Smart Preprocessor) ---
 def is_already_processed(img):
-    # تحليل إحصائي: صور Ben Graham تكون رمادية ومنحرفة معيارياً بشكل منخفض
     std_dev = np.std(img)
-    return std_dev < 35 # عتبة تقديرية للصور الرمادية المعالجة
+    return std_dev < 35
 
 def smart_preprocess(image_pil, size=512, lang_dict=None):
     if lang_dict is None:
         lang_dict = L
     
-    steps = []  # قائمة لتخزين الخطوات والصور
-    step_count = 1
+    steps = []
     
     img = np.array(image_pil)
     steps.append({
@@ -143,14 +141,12 @@ def smart_preprocess(image_pil, size=512, lang_dict=None):
         "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     })
     
-    # فحص تلقائي
     if is_already_processed(img):
         status = "Already Processed / İşlenmiş / معالجة مسبقاً"
         steps.append({
             "name": lang_dict["step_3"],
             "image": cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         })
-        # فقط توحيد الحجم والقص
         img = cv2.resize(img, (size, size))
         steps.append({
             "name": lang_dict["step_4"],
@@ -158,7 +154,6 @@ def smart_preprocess(image_pil, size=512, lang_dict=None):
         })
         return img, status, steps
     
-    # المعالجة الكاملة للصور الخام
     status = "Raw Image / Ham Görüntü / صورة خام"
     steps.append({
         "name": lang_dict["step_5"],
