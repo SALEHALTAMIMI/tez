@@ -18,7 +18,7 @@ LANGUAGES = {
         "conf": "Confidence Level",
         "note": "Note: This is a technical analysis tool, the final decision belongs to the specialist.",
         "student": "Student: SALEH SABRI ALTAMIMI",
-        "supervisor": "Supervisor: Prof. Dr. Yusuf ÖZCAN",
+        "supervisor": "Supervisor: Dr. Muazzez Buket Darıcı",
         "auto_msg": "System detected: ",
         "steps": "Processing Steps",
         # Processing step names
@@ -49,7 +49,7 @@ LANGUAGES = {
         "conf": "Güven Seviyesi",
         "note": "Not: Bu teknik bir analiz aracıdır, nihai karar uzmana aittir.",
         "student": "Öğrenci: SALEH SABRI ALTAMIMI",
-        "supervisor": "Danışman: Prof. Dr. Yusuf ÖZCAN",
+        "supervisor": "Danışman: Dr. Muazzez Buket Darıcı",
         "auto_msg": "Sistem algıladı: ",
         "steps": "İşleme Adımları",
         # Processing step names
